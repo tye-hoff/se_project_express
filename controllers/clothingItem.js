@@ -35,13 +35,10 @@ const likeItem = (req, res) =>
     { $addToSet: { likes: req.user._id } },
     { new: true }
   ).then((updatedItem) => {
-    res.status(errors.SUCCESS_ERROR).send({ updatedItem });
+    res
+      .status(errors.BAD_REQUEST_ERROR)
+      .send({ message: "data.message", updatedItem });
   });
-// .catch((e) => {
-//   res
-//     .status(error.INCOMPLETE_REQUEST_ERROR)
-//     .send({ message: "cannot like" });
-// });
 
 const dislikeItem = (req, res) =>
   ClothingItem.findByIdAndUpdate(
@@ -49,7 +46,9 @@ const dislikeItem = (req, res) =>
     { $pull: { likes: req.user._id } },
     { new: true }
   ).then((updatedItem) => {
-    res.status(errors.SUCCESS_ERROR).send({ updatedItem });
+    res
+      .status(errors.BAD_REQUEST_ERROR)
+      .send({ message: "data.message", updatedItem });
   });
 
 module.exports = { createItem, getItems, likeItem, dislikeItem };
