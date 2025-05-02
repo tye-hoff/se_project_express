@@ -1,19 +1,55 @@
 const ClothingItem = require("../models/clothingItem");
+const errors = require("../utils/errors");
+
+const getItems = (req, res) => {
+  ClothingItem.find({}).then((items) => {
+    res.status(errors.SUCCESS_ERROR).send(items);
+  });
+};
 
 const createItem = (req, res) => {
-  console.log(req);
   console.log(req.body);
+  const { name, weather, imageUrl } = req.body;
 
-  const { name, weather, imageURL } = req.body;
-
-  ClothingItem.create({ name, weather, imageURL })
+  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       console.log(item);
       res.send({ data: item });
     })
     .catch((e) => {
-      res.status(500).send({ message: "error from creatItem", e });
+      if (e.name === "ValidationError") {
+        return res
+          .status(errors.BAD_REQUEST_ERROR)
+          .send({ message: e.message });
+      }
+      res
+        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .send({ message: "error from creatItem", e });
+      console.log(e);
     });
 };
 
-module.exports = { createItem };
+const likeItem = (req, res) =>
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true }
+  ).then((updatedItem) => {
+    res.status(errors.SUCCESS_ERROR).send({ updatedItem });
+  });
+// .catch((e) => {
+//   res
+//     .status(error.INCOMPLETE_REQUEST_ERROR)
+//     .send({ message: "cannot like" });
+// });
+
+const dislikeItem = (req, res) =>
+  ClothingItem.findByIdAndUpdate(
+    req.params.itemId,
+    { $pull: { likes: req.user._id } },
+    { new: true }
+  ).then((updatedItem) => {
+    res.status(errors.SUCCESS_ERROR).send({ updatedItem });
+  });
+
+module.exports = { createItem, getItems, likeItem, dislikeItem };

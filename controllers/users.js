@@ -1,12 +1,15 @@
 const User = require("../models/user");
+const errors = require("../utils/errors");
 
 const getUsers = (req, res) => {
   console.log("IN CONTROLLER");
   User.find({})
-    .then((users) => res.status(200).send(users))
+    .then((users) => res.status(errors.SUCCESS_ERROR).send(users))
     .catch((err) => {
       console.error(err);
-      return res.status(500).send({ message: err.message });
+      return res
+        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .send({ message: err.message });
     });
 };
 
@@ -14,13 +17,15 @@ const createUser = (req, res) => {
   const { name, avatar } = req.body;
 
   User.create({ name, avatar })
-    .then((user) => res.status(201).send(user))
+    .then((user) => res.status(errors.CREATED_ERROR).send(user))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        res.status(400).send({ message: err.message });
+        res.status(errors.BAD_REQUEST_ERROR).send({ message: err.message });
       } else {
-        res.status(500).send({ message: err.message });
+        res
+          .status(errors.INCOMPLETE_REQUEST_ERROR)
+          .send({ message: err.message });
       }
     });
 };
@@ -29,17 +34,22 @@ const getUser = (req, res) => {
   const { userId } = req.params;
 
   User.findById(userId)
-    .then((user) => res.status(200).send(user))
     .orFail()
+    .then((user) => res.status(errors.SUCCESS_ERROR).send(user))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
-        // return res.status(400).send({ message: err.message });
-        // 404
+        return res
+          .status(errors.NOT_FOUND_ERROR)
+          .send({ message: err.message });
       } else if (err.name === "CastError") {
-        // 400
+        return res
+          .status(errors.BAD_REQUEST_ERROR)
+          .send({ message: err.message });
       }
-      return res.status(500).send({ message: err.message });
+      return res
+        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .send({ message: err.message });
     });
 };
 
