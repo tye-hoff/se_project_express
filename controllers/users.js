@@ -2,7 +2,6 @@ const User = require("../models/user");
 const errors = require("../utils/errors");
 
 const getUsers = (req, res) => {
-  console.log("IN CONTROLLER");
   User.find({})
     .then((users) => res.status(errors.SUCCESS_ERROR).send(users))
     .catch((err) => {
@@ -42,7 +41,8 @@ const getUser = (req, res) => {
         return res
           .status(errors.NOT_FOUND_ERROR)
           .send({ message: err.message });
-      } else if (err.name === "CastError") {
+      }
+      if (err.name === "CastError") {
         return res
           .status(errors.BAD_REQUEST_ERROR)
           .send({ message: err.message });

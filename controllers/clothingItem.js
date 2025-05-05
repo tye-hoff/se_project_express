@@ -7,7 +7,9 @@ const getItems = (req, res) => {
       res.status(errors.SUCCESS_ERROR).send(items);
     })
     .catch(() => {
-      res.status(errors.INCOMPLETE_REQUEST_ERROR);
+      res
+        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .send({ message: "An error has occured on the server" });
     });
 };
 
@@ -16,7 +18,6 @@ const createItem = (req, res) => {
 
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
-      console.log(item);
       res.send({ data: item });
     })
     .catch((error) => {
@@ -30,6 +31,9 @@ const createItem = (req, res) => {
           .status(errors.BAD_REQUEST_ERROR)
           .send({ message: error.message });
       }
+      return res
+        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .send({ message: "An error has occured on the server" });
     });
 };
 
@@ -46,7 +50,7 @@ const likeItem = (req, res) =>
         .send({ message: "data.message", updatedItem });
     })
     .catch((error) => {
-      if (error.name === "NotFoundError") {
+      if (error.name === "DocumentNotFoundError") {
         return res
           .status(errors.NOT_FOUND_ERROR)
           .send({ message: error.message });
@@ -54,6 +58,9 @@ const likeItem = (req, res) =>
       if (error.name === "CastError") {
         res.status(errors.BAD_REQUEST_ERROR).send({ message: error.message });
       }
+      return res
+        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .send({ message: "An error has occured on the server" });
     });
 
 const dislikeItem = (req, res) =>
@@ -69,9 +76,17 @@ const dislikeItem = (req, res) =>
         .send({ message: "data.message", updatedItem });
     })
     .catch((error) => {
-      if (error.name === "IncompleteRequestError") {
-        res.status(errors.NOT_FOUND_ERROR).send({ message: "data.message" });
+      if (error.name === "DocumentNotFoundError") {
+        return res
+          .status(errors.NOT_FOUND_ERROR)
+          .send({ message: error.message });
       }
+      if (error.name === "CastError") {
+        res.status(errors.BAD_REQUEST_ERROR).send({ message: "data.message" });
+      }
+      return res
+        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .send({ message: "An error has occured on the server" });
     });
 
 const deleteItem = (req, res) => {
@@ -82,9 +97,15 @@ const deleteItem = (req, res) => {
         .send({ message: "data.message", deletedItem });
     })
     .catch((error) => {
-      if (error.name === "IncompleteRequestError") {
+      if (error.name === "CastError") {
+        res.status(errors.BAD_REQUEST_ERROR).send({ message: "data.message" });
+      }
+      if (error.name === "DocumentNotFoundError") {
         res.status(errors.NOT_FOUND_ERROR).send({ message: "data.message" });
       }
+      return res
+        .status(error.INCOMPLETE_REQUEST_ERROR)
+        .send({ message: "An error has occured on the server" });
     });
 };
 
