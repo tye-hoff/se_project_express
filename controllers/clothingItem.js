@@ -16,7 +16,7 @@ const getItems = (req, res) => {
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
-  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
+  ClothingItem.create({ name, weather, imageUrl, owner: req.user.id })
     .then((item) => {
       res.send({ data: item });
     })
@@ -39,8 +39,8 @@ const createItem = (req, res) => {
 
 const likeItem = (req, res) =>
   ClothingItem.findByIdAndUpdate(
-    req.params._id,
-    { $addToSet: { likes: req.user._id } },
+    req.params.id,
+    { $addToSet: { likes: req.user.id } },
     { new: true }
   )
     .orFail()
@@ -65,8 +65,8 @@ const likeItem = (req, res) =>
 
 const dislikeItem = (req, res) =>
   ClothingItem.findByIdAndUpdate(
-    req.params._id,
-    { $pull: { likes: req.user._id } },
+    req.params.id,
+    { $pull: { likes: req.user.id } },
     { new: true }
   )
     .orFail()
@@ -90,7 +90,7 @@ const dislikeItem = (req, res) =>
     });
 
 const deleteItem = (req, res) => {
-  ClothingItem.findByIdAndDelete(req.params._id)
+  ClothingItem.findByIdAndDelete(req.params.id)
     .then((deletedItem) => {
       res
         .status(errors.SUCCESS_ERROR)
