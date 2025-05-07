@@ -13,18 +13,23 @@ const getUsers = (req, res) => {
 };
 
 const createUser = (req, res) => {
-  const { name, avatar } = req.body;
+  const { name, avatar, email, password } = req.body;
 
-  User.create({ name, avatar })
+  User.create({ name, avatar, email, password })
     .then((user) => res.status(errors.CREATED_ERROR).send(user))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
         res.status(errors.BAD_REQUEST_ERROR).send({ message: err.message });
-      } else {
+      }
+      if (err.name === "DefaultError") {
         res
           .status(errors.INCOMPLETE_REQUEST_ERROR)
           .send({ message: err.message });
+      } else if (err.name === "DuplicateError") {
+        res.status(errors.DUPLICATE_ERROR).send({ message: err.message });
+      } else {
+        res.status(errors.CONFLICT_ERROR).send({ message: err.message });
       }
     });
 };
@@ -53,4 +58,31 @@ const getUser = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser };
+const loginUser = (req, res) => {
+  const { email, password } = req.body;
+
+  const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+    expiresIn: "7d",
+  });
+
+  User.findOne({ email })
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new Error("Incorrect email or password"));
+      }
+
+      return bcrypt.compare(password, user.password);
+    })
+    .then((matched) => {
+      if (!matched) {
+        return Promise.reject(new Error("Incorrect email or password"));
+      }
+
+      res.send({ message: "Everything is good!" });
+    })
+    .catch((err) => {
+      res.status(errors.AUTHENTICATION_ERROR).send({ message: err.message });
+    });
+};
+
+module.exports = { getUsers, createUser, getUser, loginUser };
