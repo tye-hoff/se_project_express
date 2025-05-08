@@ -1,7 +1,6 @@
 const User = require("../models/user");
 const errors = require("../utils/errors");
-const auth = require("../middlewares/auth");
-const bcrypt = require("bcryptjs");
+const JWT_SECRET = require("../utils/errors");
 
 const getUsers = (req, res) => {
   User.find({})
@@ -63,23 +62,12 @@ const getUser = (req, res) => {
 const loginUser = (req, res) => {
   const { email, password } = req.body;
 
-  const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
-    expiresIn: "7d",
-  });
-
-  User.findOne({ email })
-    .select("+password")
+  User.findUserByCredentials(email, password)
     .then((user) => {
-      if (!user) {
-        return Promise.reject(new Error("Incorrect email or password"));
-      }
-      return bcrypt.compare(password, user.password);
-    })
-    .then((matched) => {
-      if (!matched) {
-        return Promise.reject(new Error("Incorrect email or password"));
-      }
-      res.send({ message: "Everything is good" });
+      const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
+        expiresIn: "7d",
+      });
+      res.send({ token });
     })
     .catch((err) => {
       return res

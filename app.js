@@ -21,8 +21,6 @@ mongoose
 
 app.use(express.json());
 app.use("/", mainRouter);
-app.post("/signin", login);
-app.post("/signup", login);
 
 app.listen(PORT, () => {
   console.log(`listening on port ${PORT}`);

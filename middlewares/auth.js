@@ -8,10 +8,11 @@ function authenticate(req, res, next) {
   } else {
     res.status(errors.AUTHENTICATION_ERROR).send({ message: err.message });
   }
+  payload = jwt.verify(token, JWT_SECRET);
+  req.user = payload;
+  return next();
 }
 
 auth.use(authenticate);
-
-payload = jwt.verify(token, JWT_SECRET);
 
 module.exports = auth;
