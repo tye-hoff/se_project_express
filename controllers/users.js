@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const { findOne } = require("../models/user");
 const errors = require("../utils/errors");
 const JWT_SECRET = require("../utils/errors");
 

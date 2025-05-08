@@ -13,6 +13,4 @@ function authenticate(req, res, next) {
   return next();
 }
 
-auth.use(authenticate);
-
-module.exports = auth;
+module.exports = { authenticate };

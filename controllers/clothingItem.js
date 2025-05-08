@@ -107,6 +107,30 @@ const deleteItem = (req, res) => {
         .status(error.INCOMPLETE_REQUEST_ERROR)
         .send({ message: "An error has occured on the server" });
     });
+
+  ClothingItem.findById(req.params.itemId)
+    .then((item) => {
+      if (req.user._id.toString() === item.owner.toString()) {
+        return ClothingItem.findByIdAndDelete(req.params.itemId).then(() => {
+          res.send({ message: "Item deleted" });
+        });
+      } else {
+        return res
+          .status(errors.PERMISSION_ERROR)
+          .send({ message: "You do not have permission to delete" });
+      }
+    })
+    .catch((error) => {
+      if (error.name === "CastError") {
+        res.status(errors.BAD_REQUEST_ERROR).send({ message: "data.message" });
+      }
+      if (error.name === "DocumentNotFoundError") {
+        res.status(errors.NOT_FOUND_ERROR).send({ message: "data.message" });
+      }
+      return res
+        .status(error.INCOMPLETE_REQUEST_ERROR)
+        .send({ message: "An error has occured on the server" });
+    });
 };
 
 module.exports = { createItem, getItems, likeItem, dislikeItem, deleteItem };
