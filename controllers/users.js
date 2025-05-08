@@ -36,7 +36,7 @@ const createUser = (req, res) => {
     });
 };
 
-const getUser = (req, res) => {
+const getCurrentUser = (req, res) => {
   const { userId } = req.params;
 
   User.findById(userId)
@@ -77,4 +77,35 @@ const loginUser = (req, res) => {
     });
 };
 
-module.exports = { getUsers, createUser, getUser, loginUser };
+const updateUser = (req, res) => {
+  const { name, avatar } = req.body;
+
+  User.findByIdAndUpdate(name, avatar)
+    .orFail()
+    .then((updatedUser) => {
+      res
+        .status(errors.SUCCESS_ERROR)
+        .send({ message: "data.message", updatedUser });
+      return updatedUser;
+    })
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        return res
+          .status(errors.NOT_FOUND_ERROR)
+          .send({ message: err.message });
+      }
+      if (err.name === "CastError") {
+        return res
+          .status(errors.BAD_REQUEST_ERROR)
+          .send({ message: err.message });
+      }
+    });
+};
+
+module.exports = {
+  getUsers,
+  createUser,
+  getCurrentUser,
+  loginUser,
+  updateUser,
+};
