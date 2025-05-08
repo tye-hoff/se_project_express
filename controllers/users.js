@@ -1,5 +1,7 @@
 const User = require("../models/user");
 const errors = require("../utils/errors");
+const auth = require("../middlewares/auth");
+const bcrypt = require("bcryptjs");
 
 const getUsers = (req, res) => {
   User.find({})
@@ -66,22 +68,23 @@ const loginUser = (req, res) => {
   });
 
   User.findOne({ email })
+    .select("+password")
     .then((user) => {
       if (!user) {
         return Promise.reject(new Error("Incorrect email or password"));
       }
-
       return bcrypt.compare(password, user.password);
     })
     .then((matched) => {
       if (!matched) {
         return Promise.reject(new Error("Incorrect email or password"));
       }
-
-      res.send({ message: "Everything is good!" });
+      res.send({ message: "Everything is good" });
     })
     .catch((err) => {
-      res.status(errors.AUTHENTICATION_ERROR).send({ message: err.message });
+      return res
+        .status(errors.AUTHENTICATION_ERROR)
+        .send({ message: err.message });
     });
 };
 
