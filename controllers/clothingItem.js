@@ -16,7 +16,7 @@ const getItems = (req, res) => {
 const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
-  ClothingItem.create({ name, weather, imageUrl, owner: req.user.id })
+  ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
     .then((item) => {
       res.send({ data: item });
     })
@@ -40,7 +40,7 @@ const createItem = (req, res) => {
 const likeItem = (req, res) =>
   ClothingItem.findByIdAndUpdate(
     req.params.id,
-    { $addToSet: { likes: req.user.id } },
+    { $addToSet: { likes: req.user._id } },
     { new: true }
   )
     .orFail()
@@ -66,7 +66,7 @@ const likeItem = (req, res) =>
 const dislikeItem = (req, res) =>
   ClothingItem.findByIdAndUpdate(
     req.params.id,
-    { $pull: { likes: req.user.id } },
+    { $pull: { likes: req.user._id } },
     { new: true }
   )
     .orFail()
@@ -128,7 +128,7 @@ const deleteItem = (req, res) => {
         res.status(errors.NOT_FOUND_ERROR).send({ message: "data.message" });
       }
       return res
-        .status(error.INCOMPLETE_REQUEST_ERROR)
+        .status(errors.INCOMPLETE_REQUEST_ERROR)
         .send({ message: "An error has occured on the server" });
     });
 };

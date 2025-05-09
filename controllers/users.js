@@ -17,28 +17,35 @@ const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   User.create({ name, avatar, email, password })
-    .then((user) => res.status(errors.CREATED_ERROR).send(user))
+    .then((user) => {
+      delete user.password;
+      console.log("user", user);
+      return res.status(errors.CREATED_ERROR).send(user);
+    })
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
-        res.status(errors.BAD_REQUEST_ERROR).send({ message: err.message });
+        return res
+          .status(errors.BAD_REQUEST_ERROR)
+          .send({ message: err.message });
       }
       if (err.name === "DefaultError") {
-        res
+        return res
           .status(errors.INCOMPLETE_REQUEST_ERROR)
           .send({ message: err.message });
       } else if (err.name === "DuplicateError") {
-        res.status(errors.DUPLICATE_ERROR).send({ message: err.message });
-      } else {
-        res.status(errors.CONFLICT_ERROR).send({ message: err.message });
+        return res
+          .status(errors.DUPLICATE_ERROR)
+          .send({ message: err.message });
       }
+      return res.status(errors.CONFLICT_ERROR).send({ message: err.message });
     });
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.user._id;
+  const { _id } = req.user;
 
-  User.findById(userId)
+  User.findById(_id)
     .orFail()
     .then((user) => res.status(errors.SUCCESS_ERROR).send(user))
     .catch((err) => {
