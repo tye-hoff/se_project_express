@@ -1,5 +1,4 @@
 const User = require("../models/user");
-const { findOne } = require("../models/user");
 const errors = require("../utils/errors");
 const JWT_SECRET = require("../utils/errors");
 
@@ -37,7 +36,7 @@ const createUser = (req, res) => {
 };
 
 const getCurrentUser = (req, res) => {
-  const { userId } = req.params;
+  const { userId } = req.user._id;
 
   User.findById(userId)
     .orFail()
@@ -80,8 +79,10 @@ const loginUser = (req, res) => {
 const updateUser = (req, res) => {
   const { name, avatar } = req.body;
 
-  User.findByIdAndUpdate(name, avatar)
-    .orFail()
+  User.findByIdAndUpdate(req.user._id, { name, avatar }, { new: true })
+    .orFail(() => {
+      res.send({ message: "user not found" });
+    })
     .then((updatedUser) => {
       res
         .status(errors.SUCCESS_ERROR)

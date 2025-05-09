@@ -90,28 +90,28 @@ const dislikeItem = (req, res) =>
     });
 
 const deleteItem = (req, res) => {
-  ClothingItem.findByIdAndDelete(req.params.id)
-    .then((deletedItem) => {
-      res
-        .status(errors.SUCCESS_ERROR)
-        .send({ message: "data.message", deletedItem });
-    })
-    .catch((error) => {
-      if (error.name === "CastError") {
-        res.status(errors.BAD_REQUEST_ERROR).send({ message: "data.message" });
-      }
-      if (error.name === "DocumentNotFoundError") {
-        res.status(errors.NOT_FOUND_ERROR).send({ message: "data.message" });
-      }
-      return res
-        .status(error.INCOMPLETE_REQUEST_ERROR)
-        .send({ message: "An error has occured on the server" });
-    });
+  // ClothingItem.findByIdAndDelete(req.params.id)
+  //   .then((deletedItem) => {
+  //     res
+  //       .status(errors.SUCCESS_ERROR)
+  //       .send({ message: "data.message", deletedItem });
+  //   })
+  //   .catch((error) => {
+  //     if (error.name === "CastError") {
+  //       res.status(errors.BAD_REQUEST_ERROR).send({ message: "data.message" });
+  //     }
+  //     if (error.name === "DocumentNotFoundError") {
+  //       res.status(errors.NOT_FOUND_ERROR).send({ message: "data.message" });
+  //     }
+  //     return res
+  //       .status(error.INCOMPLETE_REQUEST_ERROR)
+  //       .send({ message: "An error has occured on the server" });
+  //   });
 
   ClothingItem.findById(req.params.itemId)
     .then((item) => {
       if (req.user._id.toString() === item.owner.toString()) {
-        return ClothingItem.findByIdAndDelete(req.params.itemId).then(() => {
+        return ClothingItem.deleteOne(item).then(() => {
           res.send({ message: "Item deleted" });
         });
       } else {
