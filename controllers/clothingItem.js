@@ -4,7 +4,7 @@ const errors = require("../utils/errors");
 const getItems = (req, res) => {
   ClothingItem.find({})
     .then((items) => {
-      res.status(errors.SUCCESS_ERROR).send(items);
+      res.status(errors.SUCCESS).send(items);
     })
     .catch(() => {
       res
@@ -32,7 +32,7 @@ const createItem = (req, res) => {
           .send({ message: error.message });
       }
       return res
-        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .status(errors.INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occured on the server" });
     });
 };
@@ -45,9 +45,7 @@ const likeItem = (req, res) =>
   )
     .orFail()
     .then((updatedItem) => {
-      res
-        .status(errors.SUCCESS_ERROR)
-        .send({ message: "data.message", updatedItem });
+      res.status(errors.SUCCESS).send({ message: "data.message", updatedItem });
     })
     .catch((error) => {
       if (error.name === "DocumentNotFoundError") {
@@ -59,7 +57,7 @@ const likeItem = (req, res) =>
         res.status(errors.BAD_REQUEST_ERROR).send({ message: error.message });
       }
       return res
-        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .status(errors.INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occured on the server" });
     });
 
@@ -71,9 +69,7 @@ const dislikeItem = (req, res) =>
   )
     .orFail()
     .then((updatedItem) => {
-      res
-        .status(errors.SUCCESS_ERROR)
-        .send({ message: "data.message", updatedItem });
+      res.status(errors.SUCCESS).send({ message: "data.message", updatedItem });
     })
     .catch((error) => {
       if (error.name === "DocumentNotFoundError") {
@@ -85,7 +81,7 @@ const dislikeItem = (req, res) =>
         res.status(errors.BAD_REQUEST_ERROR).send({ message: "data.message" });
       }
       return res
-        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .status(errors.INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occured on the server" });
     });
 
@@ -128,7 +124,7 @@ const deleteItem = (req, res) => {
         res.status(errors.NOT_FOUND_ERROR).send({ message: "data.message" });
       }
       return res
-        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .status(errors.INTERNAL_SERVER_ERROR)
         .send({ message: "An error has occured on the server" });
     });
 };

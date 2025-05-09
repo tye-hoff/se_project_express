@@ -1,6 +1,8 @@
 const errors = require("../utils/errors");
 
 function authenticate(req, res, next) {
+  console.log(req.headers);
+  const authorization = req.headers.authorization;
   const token = authorization.replace("Bearer", "");
 
   if (token === "MySecretToken") {

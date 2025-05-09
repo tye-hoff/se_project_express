@@ -4,11 +4,11 @@ const JWT_SECRET = require("../utils/errors");
 
 const getUsers = (req, res) => {
   User.find({})
-    .then((users) => res.status(errors.SUCCESS_ERROR).send(users))
+    .then((users) => res.status(errors.SUCCESS).send(users))
     .catch((err) => {
       console.error(err);
       return res
-        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .status(errors.INTERNAL_SERVER_ERROR)
         .send({ message: err.message });
     });
 };
@@ -18,9 +18,10 @@ const createUser = (req, res) => {
 
   User.create({ name, avatar, email, password })
     .then((user) => {
-      delete user.password;
+      const userObject = user.toObject();
+      delete userObject.password;
       console.log("user", user);
-      return res.status(errors.CREATED_ERROR).send(user);
+      return res.status(errors.CREATED).send(userObject);
     })
     .catch((err) => {
       console.error(err);
@@ -31,7 +32,7 @@ const createUser = (req, res) => {
       }
       if (err.name === "DefaultError") {
         return res
-          .status(errors.INCOMPLETE_REQUEST_ERROR)
+          .status(errors.INTERNAL_SERVER_ERROR)
           .send({ message: err.message });
       } else if (err.name === "DuplicateError") {
         return res
@@ -47,7 +48,7 @@ const getCurrentUser = (req, res) => {
 
   User.findById(_id)
     .orFail()
-    .then((user) => res.status(errors.SUCCESS_ERROR).send(user))
+    .then((user) => res.status(errors.SUCCESS).send(user))
     .catch((err) => {
       console.error(err);
       if (err.name === "DocumentNotFoundError") {
@@ -61,14 +62,18 @@ const getCurrentUser = (req, res) => {
           .send({ message: err.message });
       }
       return res
-        .status(errors.INCOMPLETE_REQUEST_ERROR)
+        .status(errors.INTERNAL_SERVER_ERROR)
         .send({ message: err.message });
     });
 };
 
 const loginUser = (req, res) => {
   const { email, password } = req.body;
-
+  console.log(email);
+  if (!email) {
+    res.status(errors.BAD_REQUEST_ERROR).send({ message: "email required" });
+    return;
+  }
   User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
@@ -77,9 +82,17 @@ const loginUser = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      return res
-        .status(errors.AUTHENTICATION_ERROR)
-        .send({ message: err.message });
+      console.error(err);
+      if (err.message === "Incorrect email or password") {
+        return res
+          .status(errors.AUTHENTICATION_ERROR)
+          .send({ message: err.message });
+      }
+      if (err.message === "CastError") {
+        return res
+          .status(errors.BAD_REQUEST_ERROR)
+          .send({ message: err.message });
+      }
     });
 };
 
@@ -91,9 +104,7 @@ const updateUser = (req, res) => {
       res.send({ message: "user not found" });
     })
     .then((updatedUser) => {
-      res
-        .status(errors.SUCCESS_ERROR)
-        .send({ message: "data.message", updatedUser });
+      res.status(errors.SUCCESS).send({ message: "data.message", updatedUser });
       return updatedUser;
     })
     .catch((err) => {

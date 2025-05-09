@@ -6,9 +6,12 @@ const {
   dislikeItem,
   deleteItem,
 } = require("../controllers/clothingItem");
+const { authenticate } = require("../middlewares/auth");
 
-router.post("/", createItem);
 router.get("/", getItems);
+
+router.use(authenticate);
+router.post("/", createItem);
 router.put("/:id/likes", likeItem);
 router.delete("/:id/likes", dislikeItem);
 router.delete("/:id", deleteItem);

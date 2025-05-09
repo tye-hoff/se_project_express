@@ -27,6 +27,7 @@ const userSchema = new mongoose.Schema({
         return validator.isEmail(value);
       },
     },
+    unique: true,
   },
   password: {
     type: String,
