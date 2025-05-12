@@ -2,17 +2,6 @@ const User = require("../models/user");
 const errors = require("../utils/errors");
 const JWT_SECRET = require("../utils/errors");
 
-const getUsers = (req, res) => {
-  User.find({})
-    .then((users) => res.status(errors.SUCCESS).send(users))
-    .catch((err) => {
-      console.error(err);
-      return res
-        .status(errors.INTERNAL_SERVER_ERROR)
-        .send({ message: err.message });
-    });
-};
-
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
@@ -29,17 +18,15 @@ const createUser = (req, res) => {
         return res
           .status(errors.BAD_REQUEST_ERROR)
           .send({ message: err.message });
-      }
-      if (err.name === "DefaultError") {
+      } else if (err.name === 11000) {
         return res
-          .status(errors.INTERNAL_SERVER_ERROR)
-          .send({ message: err.message });
-      } else if (err.name === "DuplicateError") {
-        return res
-          .status(errors.DUPLICATE_ERROR)
-          .send({ message: err.message });
+          .status(errors.CONFLICT_ERROR)
+          .send({ message: "duplicate email error" });
       }
-      return res.status(errors.CONFLICT_ERROR).send({ message: err.message });
+      res.status(errors.CONFLICT_ERROR).send({ message: err.message });
+      return res
+        .status(errors.INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
@@ -70,7 +57,7 @@ const getCurrentUser = (req, res) => {
 const loginUser = (req, res) => {
   const { email, password } = req.body;
   console.log(email);
-  if (!email) {
+  if (!email || !password) {
     res.status(errors.BAD_REQUEST_ERROR).send({ message: "email required" });
     return;
   }
@@ -83,23 +70,25 @@ const loginUser = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.message === "Incorrect email or password") {
+      if (err.message === "Password does not match") {
         return res
           .status(errors.AUTHENTICATION_ERROR)
           .send({ message: err.message });
       }
-      if (err.message === "CastError") {
-        return res
-          .status(errors.BAD_REQUEST_ERROR)
-          .send({ message: err.message });
-      }
+      return res
+        .status(errors.INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
 const updateUser = (req, res) => {
   const { name, avatar } = req.body;
 
-  User.findByIdAndUpdate(req.user._id, { name, avatar }, { new: true })
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, avatar },
+    { new: true, runValidators: true }
+  )
     .orFail(() => {
       res.send({ message: "user not found" });
     })
@@ -108,6 +97,11 @@ const updateUser = (req, res) => {
       return updatedUser;
     })
     .catch((err) => {
+      if (err.name === "ValidationError") {
+        return res
+          .status(errors.BAD_REQUEST_ERROR)
+          .send({ message: err.message });
+      }
       if (err.name === "DocumentNotFoundError") {
         return res
           .status(errors.NOT_FOUND_ERROR)
@@ -118,11 +112,13 @@ const updateUser = (req, res) => {
           .status(errors.BAD_REQUEST_ERROR)
           .send({ message: err.message });
       }
+      return res
+        .status(errors.INTERNAL_SERVER_ERROR)
+        .send({ message: err.message });
     });
 };
 
 module.exports = {
-  getUsers,
   createUser,
   getCurrentUser,
   loginUser,

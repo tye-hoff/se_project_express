@@ -1,16 +1,26 @@
 const errors = require("../utils/errors");
+const jwt = require("jsonwebtoken");
 
 function authenticate(req, res, next) {
-  console.log(req.headers);
-  const authorization = req.headers.authorization;
-  const token = authorization.replace("Bearer", "");
+  const { authorization } = req.headers;
 
-  if (token === "MySecretToken") {
-    next();
-  } else {
-    res.status(errors.AUTHENTICATION_ERROR).send({ message: err.message });
+  if (!authorization || !authorization.startsWith("Bearer")) {
+    return res
+      .status(errors.AUTHENTICATION_ERROR)
+      .send({ message: "Authorization required" });
   }
-  payload = jwt.verify(token, JWT_SECRET);
+
+  const token = authorization.replace("Bearer", "");
+  let payload;
+
+  try {
+    payload = jwt.verify(token, "some-secret-key");
+  } catch (err) {
+    return res
+      .status(errors.AUTHENTICATION_ERROR)
+      .send({ message: "Authorization required" });
+  }
+
   req.user = payload;
   return next();
 }
