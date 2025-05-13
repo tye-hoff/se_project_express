@@ -93,11 +93,11 @@ const deleteItem = (req, res) => {
         return ClothingItem.deleteOne(item).then(() => {
           res.send({ message: "Item deleted" });
         });
-      } else {
+      } 
         return res
           .status(errors.PERMISSION_ERROR)
           .send({ message: "You do not have permission to delete" });
-      }
+      
     })
     .catch((error) => {
       if (error.name === "CastError") {

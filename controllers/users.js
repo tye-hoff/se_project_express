@@ -1,13 +1,14 @@
 const { hash } = require("bcryptjs");
 const User = require("../models/user");
 const errors = require("../utils/errors");
+const jwt = require("../utils/congif");
 const { JWT_SECRET } = require("../utils/congif");
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   return bcrypt
-    .hash(password, 10)
+    .hash(hash, password, 10)
     .then((hash) => {
       User.create({ name, avatar, email, password: hash });
     })
@@ -23,7 +24,8 @@ const createUser = (req, res) => {
         return res
           .status(errors.BAD_REQUEST_ERROR)
           .send({ message: err.message });
-      } else if (err.code === 11000) {
+      }
+      if (err.code === 11000) {
         return res
           .status(errors.CONFLICT_ERROR)
           .send({ message: "duplicate email error" });
