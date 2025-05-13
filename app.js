@@ -14,8 +14,8 @@ mongoose
   .catch(console.error);
 
 app.use(express.json());
-app.use("/", mainRouter);
 app.use(cors());
+app.use("/", mainRouter);
 
 app.listen(PORT, () => {
   console.log(`listening on port ${PORT}`);

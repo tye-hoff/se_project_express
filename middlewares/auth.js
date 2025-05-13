@@ -1,5 +1,6 @@
 const errors = require("../utils/errors");
 const jwt = require("jsonwebtoken");
+const { JWT_SECRET } = require("../utils/congif");
 
 function authenticate(req, res, next) {
   const { authorization } = req.headers;
@@ -10,11 +11,11 @@ function authenticate(req, res, next) {
       .send({ message: "Authorization required" });
   }
 
-  const token = authorization.replace("Bearer", "");
+  const token = authorization.replace("Bearer ", "");
   let payload;
 
   try {
-    payload = jwt.verify(token, "some-secret-key");
+    payload = jwt.verify(JWT_SECRET, token, "some-secret-key");
   } catch (err) {
     return res
       .status(errors.AUTHENTICATION_ERROR)

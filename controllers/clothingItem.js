@@ -86,7 +86,7 @@ const dislikeItem = (req, res) =>
     });
 
 const deleteItem = (req, res) => {
-  ClothingItem.findById(req.params.itemId)
+  ClothingItem.findById(req.params.id)
     .orFail()
     .then((item) => {
       if (req.user._id.toString() === item.owner.toString()) {

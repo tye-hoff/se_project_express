@@ -1,11 +1,16 @@
 const User = require("../models/user");
 const errors = require("../utils/errors");
-const JWT_SECRET = require("../utils/errors");
+const { JWT_SECRET } = require("../utils/congif");
+const { hash } = require("bcryptjs");
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
-  User.create({ name, avatar, email, password })
+  return bcrypt
+    .hash(password, 10)
+    .then((hash) => {
+      User.create({ name, avatar, email, password: hash });
+    })
     .then((user) => {
       const userObject = user.toObject();
       delete userObject.password;
@@ -18,12 +23,11 @@ const createUser = (req, res) => {
         return res
           .status(errors.BAD_REQUEST_ERROR)
           .send({ message: err.message });
-      } else if (err.name === 11000) {
+      } else if (err.code === 11000) {
         return res
           .status(errors.CONFLICT_ERROR)
           .send({ message: "duplicate email error" });
       }
-      res.status(errors.CONFLICT_ERROR).send({ message: err.message });
       return res
         .status(errors.INTERNAL_SERVER_ERROR)
         .send({ message: err.message });
@@ -70,7 +74,10 @@ const loginUser = (req, res) => {
     })
     .catch((err) => {
       console.error(err);
-      if (err.message === "Password does not match") {
+      if (
+        err.message === "Incorrect email or password" ||
+        err.message === "Password does not match"
+      ) {
         return res
           .status(errors.AUTHENTICATION_ERROR)
           .send({ message: err.message });
