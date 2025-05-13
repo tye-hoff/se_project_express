@@ -1,7 +1,7 @@
+const { hash } = require("bcryptjs");
 const User = require("../models/user");
 const errors = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/congif");
-const { hash } = require("bcryptjs");
 
 const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;

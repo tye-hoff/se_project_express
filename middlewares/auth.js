@@ -1,11 +1,11 @@
-const errors = require("../utils/errors");
 const jwt = require("jsonwebtoken");
+const errors = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/congif");
 
 function authenticate(req, res, next) {
   const { authorization } = req.headers;
 
-  if (!authorization || !authorization.startsWith("Bearer")) {
+  if (!authorization || !authorization.startsWith("Bearer ")) {
     return res
       .status(errors.AUTHENTICATION_ERROR)
       .send({ message: "Authorization required" });
