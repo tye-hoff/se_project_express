@@ -1,4 +1,4 @@
-const { hash } = require("bcryptjs");
+const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const errors = require("../utils/errors");
 const jwt = require("../utils/congif");
@@ -8,7 +8,7 @@ const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   return bcrypt
-    .hash(hash, password, 10)
+    .hash(password, 10)
     .then((hash) => {
       User.create({ name, avatar, email, password: hash });
     })
