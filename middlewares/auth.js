@@ -15,7 +15,7 @@ function authenticate(req, res, next) {
   let payload;
 
   try {
-    payload = jwt.verify(JWT_SECRET, token, "some-secret-key");
+    payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
     return res
       .status(errors.AUTHENTICATION_ERROR)

@@ -93,18 +93,21 @@ const deleteItem = (req, res) => {
         return ClothingItem.deleteOne(item).then(() => {
           res.send({ message: "Item deleted" });
         });
-      } 
-        return res
-          .status(errors.PERMISSION_ERROR)
-          .send({ message: "You do not have permission to delete" });
-      
+      }
+      return res
+        .status(errors.PERMISSION_ERROR)
+        .send({ message: "You do not have permission to delete" });
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        res.status(errors.BAD_REQUEST_ERROR).send({ message: "data.message" });
+        return res
+          .status(errors.BAD_REQUEST_ERROR)
+          .send({ message: "data.message" });
       }
       if (error.name === "DocumentNotFoundError") {
-        res.status(errors.NOT_FOUND_ERROR).send({ message: "data.message" });
+        return res
+          .status(errors.NOT_FOUND_ERROR)
+          .send({ message: "data.message" });
       }
       return res
         .status(errors.INTERNAL_SERVER_ERROR)

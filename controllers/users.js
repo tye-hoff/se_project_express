@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const errors = require("../utils/errors");
-const jwt = require("../utils/congif");
+const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/congif");
 
 const createUser = (req, res) => {
@@ -9,9 +9,7 @@ const createUser = (req, res) => {
 
   return bcrypt
     .hash(password, 10)
-    .then((hash) => {
-      User.create({ name, avatar, email, password: hash });
-    })
+    .then((hash) => User.create({ name, avatar, email, password: hash }))
     .then((user) => {
       const userObject = user.toObject();
       delete userObject.password;
