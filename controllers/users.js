@@ -130,4 +130,5 @@ module.exports = {
   getCurrentUser,
   loginUser,
   updateUser,
+  // getProfile,
 };

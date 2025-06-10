@@ -9,7 +9,6 @@ const {
 const { authenticate } = require("../middlewares/auth");
 
 router.get("/", getItems);
-
 router.use(authenticate);
 router.post("/", createItem);
 router.put("/:id/likes", likeItem);
