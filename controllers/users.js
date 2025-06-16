@@ -14,7 +14,7 @@ const createUser = (req, res) => {
       const userObject = user.toObject();
       delete userObject.password;
       console.log("user", user);
-      return res.status(errors.CREATED).send(userObject);
+      return res.status(errors.CREATED).send({ userObject });
     })
     .catch((err) => {
       console.error(err);
@@ -70,7 +70,7 @@ const loginUser = (req, res) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.send({ token });
+      res.send({ token, user });
     })
     .catch((err) => {
       console.error(err);
