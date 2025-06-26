@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const errors = require("../utils/errors");
+const { AuthenticationError } = require("../errors/AuthenticationError");
 const { JWT_SECRET } = require("../utils/congif");
 
 function authenticate(req, res, next) {
@@ -7,9 +7,7 @@ function authenticate(req, res, next) {
 
   if (!authorization || !authorization.startsWith("Bearer ")) {
     console.log("header missing auth");
-    return res
-      .status(errors.AUTHENTICATION_ERROR)
-      .send({ message: "Authorization required" });
+    return next(new AuthenticationError("Authorization required"));
   }
 
   const token = authorization.replace("Bearer ", "");
@@ -20,10 +18,7 @@ function authenticate(req, res, next) {
   try {
     payload = jwt.verify(token, JWT_SECRET);
   } catch (err) {
-    console.log("header wrong auth");
-    return res
-      .status(errors.AUTHENTICATION_ERROR)
-      .send({ message: "Authorization required" });
+    return next(new AuthenticationError("Authorization required"));
   }
 
   req.user = payload;

@@ -1,19 +1,25 @@
+const InternalServerError = require("../errors/InternalServerError");
+const BadRequestError = require("../errors/BadRequestError");
+const NotFoundError = require("../errors/NotFoundError");
 const ClothingItem = require("../models/clothingItem");
 const errors = require("../utils/errors");
 
-const getItems = (req, res) => {
+const getItems = (req, res, next) => {
   ClothingItem.find({})
     .then((items) => {
       res.status(errors.SUCCESS).send(items);
     })
     .catch(() => {
-      res
-        .status(errors.INCOMPLETE_REQUEST_ERROR)
-        .send({ message: "An error has occured on the server" });
+      return next(
+        new InternalServerError("An error has occured on the server")
+      );
+      // res
+      //   .status(errors.INCOMPLETE_REQUEST_ERROR)
+      //   .send({ message: "An error has occured on the server" });
     });
 };
 
-const createItem = (req, res) => {
+const createItem = (req, res, next) => {
   const { name, weather, imageUrl } = req.body;
 
   ClothingItem.create({ name, weather, imageUrl, owner: req.user._id })
@@ -22,22 +28,18 @@ const createItem = (req, res) => {
     })
     .catch((error) => {
       if (error.name === "ValidationError") {
-        return res
-          .status(errors.BAD_REQUEST_ERROR)
-          .send({ message: error.message });
+        return next(new BadRequestError(error.message));
       }
       if (error.name === "CastError") {
-        return res
-          .status(errors.BAD_REQUEST_ERROR)
-          .send({ message: error.message });
+        return next(new BadRequestError(error.message));
       }
-      return res
-        .status(errors.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occured on the server" });
+      return next(
+        new InternalServerError("An error has occured on the server")
+      );
     });
 };
 
-const likeItem = (req, res) =>
+const likeItem = (req, res, next) =>
   ClothingItem.findByIdAndUpdate(
     req.params.id,
     { $addToSet: { likes: req.user._id } },
@@ -49,19 +51,17 @@ const likeItem = (req, res) =>
     })
     .catch((error) => {
       if (error.name === "DocumentNotFoundError") {
-        return res
-          .status(errors.NOT_FOUND_ERROR)
-          .send({ message: error.message });
+        return next(new NotFoundError("404 not found"));
       }
       if (error.name === "CastError") {
-        res.status(errors.BAD_REQUEST_ERROR).send({ message: error.message });
+        return next(new BadRequestError(error.message));
       }
-      return res
-        .status(errors.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occured on the server" });
+      return next(
+        new InternalServerError("An error has occured on the server")
+      );
     });
 
-const dislikeItem = (req, res) =>
+const dislikeItem = (req, res, next) =>
   ClothingItem.findByIdAndUpdate(
     req.params.id,
     { $pull: { likes: req.user._id } },
@@ -73,19 +73,17 @@ const dislikeItem = (req, res) =>
     })
     .catch((error) => {
       if (error.name === "DocumentNotFoundError") {
-        return res
-          .status(errors.NOT_FOUND_ERROR)
-          .send({ message: error.message });
+        return next(new NotFoundError("404 not found"));
       }
       if (error.name === "CastError") {
-        res.status(errors.BAD_REQUEST_ERROR).send({ message: "data.message" });
+        return next(new BadRequestError(error.message));
       }
-      return res
-        .status(errors.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occured on the server" });
+      return next(
+        new InternalServerError("An error has occured on the server")
+      );
     });
 
-const deleteItem = (req, res) => {
+const deleteItem = (req, res, next) => {
   ClothingItem.findById(req.params.id)
     .orFail()
     .then((item) => {
@@ -100,18 +98,14 @@ const deleteItem = (req, res) => {
     })
     .catch((error) => {
       if (error.name === "CastError") {
-        return res
-          .status(errors.BAD_REQUEST_ERROR)
-          .send({ message: "data.message" });
+        return next(new BadRequestError(error.message));
       }
       if (error.name === "DocumentNotFoundError") {
-        return res
-          .status(errors.NOT_FOUND_ERROR)
-          .send({ message: "data.message" });
+        return next(new NotFoundError("404 not found"));
       }
-      return res
-        .status(errors.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occured on the server" });
+      return next(
+        new InternalServerError("An error has occured on the server")
+      );
     });
 };
 

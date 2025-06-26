@@ -3,14 +3,12 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const errors = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/congif");
-const {
-  BadRequestError,
-  AuthenticationError,
-  NotFoundError,
-  ConflictError,
-} = require("../utils/errors");
+const { BadRequestError } = require("../errors/BadRequestError");
+const { AuthenticationError } = require("../errors/AuthenticationError");
+const { NotFoundError } = require("../errors/NotFoundError");
+const { ConflictError } = require("../errors/ConflictError");
 
-const createUser = (req, res) => {
+const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
 
   return bcrypt
@@ -26,10 +24,8 @@ const createUser = (req, res) => {
       console.error(err);
       if (err.name === "CastError") {
         next(new BadRequestError("The id string is in an invalid format"));
-      } else {
-        next(err);
       }
-      if (err.name === "ConflictError") {
+      if (err.code === "11000") {
         next(new ConflictError("Duplicate detected"));
       } else {
         next(err);
@@ -37,7 +33,7 @@ const createUser = (req, res) => {
     });
 };
 
-const getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res, next) => {
   const { _id } = req.user;
 
   User.findById(_id)
@@ -47,8 +43,6 @@ const getCurrentUser = (req, res) => {
       console.error(err);
       if (err.name === "NotFoundError") {
         next(new NotFoundError("Failed to find user"));
-      } else {
-        next(err);
       }
       if (err.name === "CastError") {
         next(new BadRequestError("The id string is in an invalid format"));
@@ -58,12 +52,11 @@ const getCurrentUser = (req, res) => {
     });
 };
 
-const loginUser = (req, res) => {
+const loginUser = (req, res, next) => {
   const { email, password } = req.body;
   console.log(email);
   if (!email || !password) {
-    res.status(errors.BAD_REQUEST_ERROR).send({ message: "email required" });
-    return;
+    return next(new BadRequestError("Email Required"));
   }
   User.findUserByCredentials(email, password)
     .then((user) => {
@@ -78,14 +71,14 @@ const loginUser = (req, res) => {
         err.message === "Incorrect email or password" ||
         err.message === "Password does not match"
       ) {
-        next(new AuthenticationError({ message: err.message }));
+        next(new AuthenticationError(err.message));
       } else {
         next(err);
       }
     });
 };
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, avatar } = req.body;
 
   User.findByIdAndUpdate(
@@ -103,30 +96,9 @@ const updateUser = (req, res) => {
     .catch((err) => {
       if (err.name === "ValidationError") {
         next(new BadRequestError("Bad request"));
-      } else {
-        next(err);
       }
       if (err.name === "DocumentNotFoundError") {
         next(new NotFoundError("Could not find"));
-      } else {
-        next(err);
-      }
-    });
-};
-
-const getProfile = (req, res, next) => {
-  User.findOne({ _id: req.params.userId })
-    .then((user) => {
-      if (!user) {
-        // if there is no such user,
-        // throw an exception
-        throw new NotFoundError("No user with matching ID found");
-      }
-      res.send(user);
-    })
-    .catch((err) => {
-      if (err.name === "CastError") {
-        next(new BadRequestError("The id string is in an invalid format"));
       } else {
         next(err);
       }
@@ -138,7 +110,6 @@ module.exports = {
   getCurrentUser,
   loginUser,
   updateUser,
-  getProfile,
 };
 
 // OLD CODE

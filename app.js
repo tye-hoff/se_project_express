@@ -33,11 +33,6 @@ app.use(errorLogger);
 app.use(errors());
 app.use(errorHandler);
 
-app.use((err, req, res, next) => {
-  console.error(err);
-  return res.status(err.statusCode).send({ message: err.message });
-});
-
 app.listen(PORT, () => {
   console.log(`listening on port ${PORT}`);
 });
