@@ -3,10 +3,10 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const errors = require("../utils/errors");
 const { JWT_SECRET } = require("../utils/congif");
-const { BadRequestError } = require("../errors/BadRequestError");
-const { AuthenticationError } = require("../errors/AuthenticationError");
-const { NotFoundError } = require("../errors/NotFoundError");
-const { ConflictError } = require("../errors/ConflictError");
+const BadRequestError = require("../errors/BadRequestError");
+const AuthenticationError = require("../errors/AuthenticationError");
+const NotFoundError = require("../errors/NotFoundError");
+const ConflictError = require("../errors/ConflictError");
 
 const createUser = (req, res, next) => {
   const { name, avatar, email, password } = req.body;
@@ -25,7 +25,7 @@ const createUser = (req, res, next) => {
       if (err.name === "CastError") {
         next(new BadRequestError("The id string is in an invalid format"));
       }
-      if (err.code === "11000") {
+      if (err.code === 11000) {
         next(new ConflictError("Duplicate detected"));
       } else {
         next(err);

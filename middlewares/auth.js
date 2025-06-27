@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { AuthenticationError } = require("../errors/AuthenticationError");
+const AuthenticationError = require("../errors/AuthenticationError");
 const { JWT_SECRET } = require("../utils/congif");
 
 function authenticate(req, res, next) {
