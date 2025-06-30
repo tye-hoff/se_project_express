@@ -17,7 +17,6 @@ const createUser = (req, res, next) => {
     .then((user) => {
       const userObject = user.toObject();
       delete userObject.password;
-      console.log("user", user);
       return res.status(errors.CREATED).send(userObject);
     })
     .catch((err) => {
@@ -54,11 +53,11 @@ const getCurrentUser = (req, res, next) => {
 
 const loginUser = (req, res, next) => {
   const { email, password } = req.body;
-  console.log(email);
+
   if (!email || !password) {
     return next(new BadRequestError("Email Required"));
   }
-  User.findUserByCredentials(email, password)
+  return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, JWT_SECRET, {
         expiresIn: "7d",
@@ -71,10 +70,9 @@ const loginUser = (req, res, next) => {
         err.message === "Incorrect email or password" ||
         err.message === "Password does not match"
       ) {
-        next(new AuthenticationError(err.message));
-      } else {
-        next(err);
+        return next(new AuthenticationError(err.message));
       }
+      return next(err);
     });
 };
 

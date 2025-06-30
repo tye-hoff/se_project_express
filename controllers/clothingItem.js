@@ -9,14 +9,9 @@ const getItems = (req, res, next) => {
     .then((items) => {
       res.status(errors.SUCCESS).send(items);
     })
-    .catch(() => {
-      return next(
-        new InternalServerError("An error has occured on the server")
-      );
-      // res
-      //   .status(errors.INCOMPLETE_REQUEST_ERROR)
-      //   .send({ message: "An error has occured on the server" });
-    });
+    .catch(() =>
+      next(new InternalServerError("An error has occured on the server"))
+    );
 };
 
 const createItem = (req, res, next) => {
@@ -51,10 +46,10 @@ const likeItem = (req, res, next) =>
     })
     .catch((error) => {
       if (error.name === "DocumentNotFoundError") {
-        return next(new NotFoundError("404 not found"));
+        next(new NotFoundError("404 not found"));
       }
       if (error.name === "CastError") {
-        return next(new BadRequestError(error.message));
+        next(new BadRequestError(error.message));
       }
       return next(
         new InternalServerError("An error has occured on the server")
